@@ -95,24 +95,28 @@ const Header = (props) => {
             >
               <Tab
                 component={Link}
+                disableRipple
                 to="/"
                 className={classes.tab}
                 label="Home"
               />
               <Tab
                 component={Link}
+                disableRipple
                 to="/about"
                 className={classes.tab}
                 label="About Us"
               />
               <Tab
                 component={Link}
+                disableRipple
                 to="/programs"
                 className={classes.tab}
                 label="Programs"
               />
               <Tab
                 component={Link}
+                disableRipple
                 to="/contact"
                 className={classes.tab}
                 label="Contact Us"
