@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
       marginBottom: 0,
     },
     [theme.breakpoints.down("xs")]: {
-      marginBottom: 0,
+      marginBottom: "1.2em",
     },
   },
   logoContainer: {
@@ -111,6 +111,7 @@ const useStyles = makeStyles((theme) => ({
   },
   appBar: {
     zIndex: theme.zIndex.modal + 1,
+    backgroundColor: theme.palette.grey[50],
   },
 }));
 
@@ -121,13 +122,12 @@ const Header = (props) => {
   const matches = useMediaQuery(theme.breakpoints.down("md"));
 
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [value, setValue] = useState(0);
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [openMenu, setOpenMenu] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const handleChange = (e, newValue) => {
-    setValue(newValue);
+    props.setValue(newValue);
   };
 
   const handleClick = (e) => {
@@ -138,7 +138,7 @@ const Header = (props) => {
   const handleMenuItemClick = (e, i) => {
     setAnchorEl(null);
     setOpenMenu(false);
-    setSelectedIndex(i);
+    props.setSelectedIndex(i);
   };
 
   const handleClose = (e) => {
@@ -204,13 +204,13 @@ const Header = (props) => {
     [...menuOptions, ...routes].forEach((route) => {
       switch (window.location.pathname) {
         case `${route.link}`:
-          if (value !== route.activeIndex) {
-            setValue(route.activeIndex);
+          if (props.Fragmentvalue !== route.activeIndex) {
+            props.setValue(route.activeIndex);
             if (
               route.selectedIndex &&
-              route.setSelectedIndex !== selectedIndex
+              route.setSelectedIndex !== props.selectedIndex
             ) {
-              setSelectedIndex(route.selectedIndex);
+              props.setSelectedIndex(route.selectedIndex);
             }
           }
           break;
@@ -218,63 +218,12 @@ const Header = (props) => {
           break;
       }
     });
-    /* 
-    switch (window.location.pathname) {
-      case "/":
-        if (value !== 0) {
-          setValue(0);
-        }
-        break;
-
-      case "/programs":
-        if (value !== 1) {
-          setValue(1);
-          setSelectedIndex(0);
-        }
-        break;
-
-      case "/professionaldev":
-        if (value !== 1) {
-          setValue(1);
-          setSelectedIndex(1);
-        }
-        break;
-
-      case "/kids&teensbootcamp":
-        if (value !== 1) {
-          setValue(1);
-          setSelectedIndex(2);
-        }
-        break;
-
-      case "/shared_studios_portal":
-        if (value !== 1) {
-          setValue(1);
-          setSelectedIndex(3);
-        }
-        break;
-
-      case "/about":
-        if (value !== 2) {
-          setValue(2);
-        }
-        break;
-
-      case "/contact":
-        if (value !== 3) {
-          setValue(3);
-        }
-        break;
-
-      default:
-        break;
-    } */
-  }, [value, menuOptions, selectedIndex, routes]);
+  }, [props.value, menuOptions, props.selectedIndex, routes, props]);
 
   const tabs = (
     <React.Fragment>
       <Tabs
-        value={value}
+        value={props.value}
         className={classes.tabContainer}
         onChange={handleChange}
         indicatorColor="primary"
@@ -343,9 +292,9 @@ const Header = (props) => {
             onClick={(event) => {
               handleMenuItemClick(event, i);
               handleClose();
-              setValue(1);
+              props.setValue(1);
             }}
-            selected={i === selectedIndex && value === 1}
+            selected={i === props.selectedIndex && props.value === 1}
             component={Link}
             to={option.link}
             classes={{ root: classes.menuItem }}
@@ -379,9 +328,9 @@ const Header = (props) => {
               to={route.link}
               onClick={() => {
                 setOpenDrawer(false);
-                setValue(route.activeIndex);
+                props.setValue(route.activeIndex);
               }}
-              selected={value === route.activeIndex}
+              selected={props.value === route.activeIndex}
               classes={{ selected: classes.drawerItemSelected }}
             >
               <ListItemText className={classes.drawerItem} disableTypography>
@@ -493,14 +442,14 @@ const Header = (props) => {
   return (
     <React.Fragment>
       <ElevationScroll>
-        <AppBar position="fixed" color="transparent" className={classes.appBar}>
+        <AppBar position="fixed" className={classes.appBar}>
           <Toolbar disableGutters>
             <Button
               disableRipple
               component={Link}
               to="/"
               className={classes.logoContainer}
-              onClick={() => setValue(0)}
+              onClick={() => props.setValue(0)}
             >
               <img
                 src={logo}
