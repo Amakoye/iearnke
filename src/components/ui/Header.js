@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AppBar from "@material-ui/core/AppBar";
@@ -5,8 +6,18 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import Button from "@material-ui/core/Button";
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
+import SwipeableDrawer from "@material-ui/core/SwipeableDrawer";
+import IconButton from "@material-ui/core/IconButton";
+import MenuIcon from "@material-ui/icons/Menu";
 import { makeStyles } from "@material-ui/styles";
 import useScrollTrigger from "@material-ui/core/useScrollTrigger";
+import useMediaQuery from "@material-ui/core/useMediaQuery";
+import { useTheme } from "@material-ui/core/styles";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
 
 import logo from "../../assets/logo.png";
 
@@ -27,6 +38,12 @@ const useStyles = makeStyles((theme) => ({
   toolbarMargin: {
     ...theme.mixins.toolbar,
     marginBottom: "0.5em",
+    [theme.breakpoints.down("md")]: {
+      marginBottom: 0,
+    },
+    [theme.breakpoints.down("xs")]: {
+      marginBottom: 0,
+    },
   },
   logoContainer: {
     padding: 0,
@@ -36,6 +53,12 @@ const useStyles = makeStyles((theme) => ({
   },
   logo: {
     height: "4.5em",
+    [theme.breakpoints.down("md")]: {
+      height: "3.5em",
+    },
+    [theme.breakpoints.down("xs")]: {
+      height: "2.5em",
+    },
   },
   tabContainer: {
     marginLeft: "auto",
@@ -44,34 +67,433 @@ const useStyles = makeStyles((theme) => ({
     ...theme.typography.tab,
     color: theme.palette.common.blue,
     minWidth: 10,
-    marginLeft: "45px",
+    marginLeft: "80px",
+  },
+  menu: {
+    /* backgroundColor: "transparent", */
+    color: theme.palette.common.blue,
+    borderRadius: 0,
+  },
+  menuItem: {
+    ...theme.typography.tab,
+    opacity: 0.7,
+    "&:hover": {
+      opacity: 1,
+    },
+  },
+  drawerIconContainer: {
+    color: theme.palette.common.blue,
+    marginLeft: "auto",
+    "&:hover": {
+      backgroundColor: "transparent",
+    },
+  },
+  drawerIcon: {
+    height: "50px",
+    width: "50px",
+    [theme.breakpoints.down("xs")]: {
+      height: "45x",
+      width: "45px",
+    },
+  },
+  drawer: {
+    /* backgroundColor: "transparent", */
+  },
+  drawerItem: {
+    ...theme.typography.tab,
+    color: theme.palette.common.blue,
+    opacity: 0.7,
+  },
+  drawerItemSelected: {
+    "& .MuiListItemText-root": {
+      opacity: 1,
+    },
+  },
+  appBar: {
+    zIndex: theme.zIndex.modal + 1,
   },
 }));
 
 const Header = (props) => {
   const classes = useStyles();
-  const [value, setValue] = useState(0);
+  const theme = useTheme();
+  //const iOS = process.browser && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const matches = useMediaQuery(theme.breakpoints.down("md"));
 
-  const handleChange = (e, value) => {
-    setValue(value);
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const [value, setValue] = useState(0);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [openMenu, setOpenMenu] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const handleChange = (e, newValue) => {
+    setValue(newValue);
   };
 
+  const handleClick = (e) => {
+    setAnchorEl(e.currentTarget);
+    setOpenMenu(true);
+  };
+
+  const handleMenuItemClick = (e, i) => {
+    setAnchorEl(null);
+    setOpenMenu(false);
+    setSelectedIndex(i);
+  };
+
+  const handleClose = (e) => {
+    setAnchorEl(null);
+    setOpenMenu(false);
+  };
+
+  const menuOptions = [
+    {
+      name: "Programs",
+      link: "/programs",
+      activeIndex: 1,
+
+      selectedIndex: 0,
+    },
+    {
+      name: "Professional Development",
+      link: "/professionaldev",
+      activeIndex: 1,
+      selectedIndex: 1,
+    },
+    {
+      name: "Kids & Teens TechSkills Bootcamps",
+      link: "/kids&teensbootcamp",
+      activeIndex: 1,
+      selectedIndex: 2,
+    },
+    {
+      name: "Shared-studios portal",
+      link: "/shared_studios_portal",
+      activeIndex: 1,
+      selectedIndex: 3,
+    },
+  ];
+
+  const routes = [
+    {
+      name: "Home",
+      link: "/",
+      activeIndex: 0,
+    },
+    {
+      name: "Programs",
+      link: "/programs",
+      activeIndex: 1,
+      ariaOwns: anchorEl ? "simple-menu" : undefined,
+      ariaPopup: anchorEl ? "true" : undefined,
+      onMouseOver: (e) => handleClick(e),
+    },
+    {
+      name: "About Us",
+      link: "/about",
+      activeIndex: 2,
+    },
+    {
+      name: "Contact Us",
+      link: "/contacts",
+      activeIndex: 3,
+    },
+  ];
+
   useEffect(() => {
-    if (window.location.pathname === "/" && value !== 0) {
-      setValue(0);
-    } else if (window.location.pathname === "/about" && value !== 1) {
-      setValue(1);
-    } else if (window.location.pathname === "/programs" && value !== 2) {
-      setValue(2);
-    } else if (window.location.pathname === "/contact" && value !== 3) {
-      setValue(3);
-    }
-  }, [value]);
+    [...menuOptions, ...routes].forEach((route) => {
+      switch (window.location.pathname) {
+        case `${route.link}`:
+          if (value !== route.activeIndex) {
+            setValue(route.activeIndex);
+            if (
+              route.selectedIndex &&
+              route.setSelectedIndex !== selectedIndex
+            ) {
+              setSelectedIndex(route.selectedIndex);
+            }
+          }
+          break;
+        default:
+          break;
+      }
+    });
+    /* 
+    switch (window.location.pathname) {
+      case "/":
+        if (value !== 0) {
+          setValue(0);
+        }
+        break;
+
+      case "/programs":
+        if (value !== 1) {
+          setValue(1);
+          setSelectedIndex(0);
+        }
+        break;
+
+      case "/professionaldev":
+        if (value !== 1) {
+          setValue(1);
+          setSelectedIndex(1);
+        }
+        break;
+
+      case "/kids&teensbootcamp":
+        if (value !== 1) {
+          setValue(1);
+          setSelectedIndex(2);
+        }
+        break;
+
+      case "/shared_studios_portal":
+        if (value !== 1) {
+          setValue(1);
+          setSelectedIndex(3);
+        }
+        break;
+
+      case "/about":
+        if (value !== 2) {
+          setValue(2);
+        }
+        break;
+
+      case "/contact":
+        if (value !== 3) {
+          setValue(3);
+        }
+        break;
+
+      default:
+        break;
+    } */
+  }, [value, menuOptions, selectedIndex, routes]);
+
+  const tabs = (
+    <React.Fragment>
+      <Tabs
+        value={value}
+        className={classes.tabContainer}
+        onChange={handleChange}
+        indicatorColor="primary"
+      >
+        {routes.map((route, index) => (
+          <Tab
+            key={`${route}${index}`}
+            aria-owns={route.ariaOwns}
+            aria-haspopup={route.ariaPopup}
+            onMouseOver={route.onMouseOver}
+            component={Link}
+            to={route.link}
+            label={route.name}
+            className={classes.tab}
+            disableRipple
+          />
+        ))}
+
+        {/*  <Tab
+          component={Link}
+          disableRipple
+          to="/"
+          className={classes.tab}
+          label="Home"
+        />
+
+        <Tab
+          aria-owns={anchorEl ? "simple-menu" : undefined}
+          aria-haspopup={anchorEl ? "true" : undefined}
+          onMouseOver={(e) => handleClick(e)}
+          component={Link}
+          disableRipple
+          to="/programs"
+          className={classes.tab}
+          label="Programs"
+        />
+        <Tab
+          component={Link}
+          disableRipple
+          to="/about"
+          className={classes.tab}
+          label="About Us"
+        />
+        <Tab
+          component={Link}
+          disableRipple
+          to="/contact"
+          className={classes.tab}
+          label="Contact Us"
+        /> */}
+      </Tabs>
+      <Menu
+        id="simple-menu"
+        anchorEl={anchorEl}
+        open={openMenu}
+        onClose={handleClose}
+        classes={{ paper: classes.menu }}
+        MenuListProps={{ onMouseLeave: handleClose }}
+        elevation={0}
+        style={{ zIndex: 1302 }}
+        keepMounted
+      >
+        {menuOptions.map((option, i) => (
+          <MenuItem
+            key={`${option}${i}`}
+            onClick={(event) => {
+              handleMenuItemClick(event, i);
+              handleClose();
+              setValue(1);
+            }}
+            selected={i === selectedIndex && value === 1}
+            component={Link}
+            to={option.link}
+            classes={{ root: classes.menuItem }}
+          >
+            {option.name}
+          </MenuItem>
+        ))}
+      </Menu>
+    </React.Fragment>
+  );
+
+  const drawer = (
+    <React.Fragment>
+      <SwipeableDrawer
+        /*  disableBackdropTransition={!iOS}
+        disableDiscovery={iOS} */
+        open={openDrawer}
+        onClose={() => setOpenDrawer(false)}
+        onOpen={() => setOpenDrawer(true)}
+        classes={{ paper: classes.drawer }}
+      >
+        <div className={classes.toolbarMargin} />
+
+        <List disablePadding>
+          {routes.map((route) => (
+            <ListItem
+              key={route.link}
+              divider
+              button
+              component={Link}
+              to={route.link}
+              onClick={() => {
+                setOpenDrawer(false);
+                setValue(route.activeIndex);
+              }}
+              selected={value === route.activeIndex}
+              classes={{ selected: classes.drawerItemSelected }}
+            >
+              <ListItemText className={classes.drawerItem} disableTypography>
+                {route.name}
+              </ListItemText>
+            </ListItem>
+          ))}
+          {/* 
+          <ListItem
+            onClick={() => {
+              setOpenDrawer(false);
+              setValue(0);
+            }}
+            divider
+            button
+            component={Link}
+            to="/"
+            selected={value === 0}
+          >
+            <ListItemText
+              className={
+                value === 0
+                  ? [classes.drawerItem, classes.drawerItemSelected]
+                  : classes.drawerItem
+              }
+              disableTypography
+            >
+              Home
+            </ListItemText>
+          </ListItem>
+          <ListItem
+            onClick={() => {
+              setOpenDrawer(false);
+              setValue(1);
+            }}
+            divider
+            button
+            component={Link}
+            to="/programs"
+            selected={value === 1}
+          >
+            <ListItemText
+              className={
+                value === 1
+                  ? [classes.drawerItem, classes.drawerItemSelected]
+                  : classes.drawerItem
+              }
+              disableTypography
+            >
+              Programs
+            </ListItemText>
+          </ListItem>
+          <ListItem
+            onClick={() => {
+              setOpenDrawer(false);
+              setValue(2);
+            }}
+            divider
+            button
+            component={Link}
+            to="/about"
+            selected={value === 2}
+          >
+            <ListItemText
+              className={
+                value === 2
+                  ? [classes.drawerItem, classes.drawerItemSelected]
+                  : classes.drawerItem
+              }
+              disableTypography
+            >
+              About Us
+            </ListItemText>
+          </ListItem>
+          <ListItem
+            onClick={() => {
+              setOpenDrawer(false);
+              setValue(3);
+            }}
+            divider
+            button
+            component={Link}
+            to="/contact"
+            selected={value === 3}
+          >
+            <ListItemText
+              className={
+                value === 3
+                  ? [classes.drawerItem, classes.drawerItemSelected]
+                  : classes.drawerItem
+              }
+              disableTypography
+            >
+              Contact Us
+            </ListItemText>
+          </ListItem> */}
+        </List>
+      </SwipeableDrawer>
+      <IconButton
+        className={classes.drawerIconContainer}
+        onClick={() => setOpenDrawer(!openDrawer)}
+        disableRipple
+      >
+        <MenuIcon className={classes.drawerIcon} />
+      </IconButton>
+    </React.Fragment>
+  );
 
   return (
     <React.Fragment>
       <ElevationScroll>
-        <AppBar position="fixed" color="transparent">
+        <AppBar position="fixed" color="transparent" className={classes.appBar}>
           <Toolbar disableGutters>
             <Button
               disableRipple
@@ -86,42 +508,7 @@ const Header = (props) => {
                 alt="Organisation Logo"
               />
             </Button>
-
-            <Tabs
-              value={value}
-              className={classes.tabContainer}
-              onChange={handleChange}
-              indicatorColor="primary"
-            >
-              <Tab
-                component={Link}
-                disableRipple
-                to="/"
-                className={classes.tab}
-                label="Home"
-              />
-              <Tab
-                component={Link}
-                disableRipple
-                to="/about"
-                className={classes.tab}
-                label="About Us"
-              />
-              <Tab
-                component={Link}
-                disableRipple
-                to="/programs"
-                className={classes.tab}
-                label="Programs"
-              />
-              <Tab
-                component={Link}
-                disableRipple
-                to="/contact"
-                className={classes.tab}
-                label="Contact Us"
-              />
-            </Tabs>
+            {matches ? drawer : tabs}
           </Toolbar>
         </AppBar>
       </ElevationScroll>
